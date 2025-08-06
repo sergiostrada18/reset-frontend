@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import Link from "next/link"
+import { NavLink } from "@/components/nav-link"
 import { motion } from "framer-motion"
 import {
   ChevronLeft,
@@ -150,8 +150,10 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex items-center space-x-2 ml-4"
           >
-            <ResetLogo className="h-8 w-12" />
-            <span className="text-xl font-bold">RESET Multiservicios</span>
+            <NavLink href="#inicio" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+              <ResetLogo className="h-8 w-12" />
+              <span className="text-xl font-bold">RESET Multiservicios</span>
+            </NavLink>
           </motion.div>
           <motion.nav 
             initial={{ x: 50, opacity: 0 }}
@@ -159,21 +161,21 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="hidden md:flex items-center space-x-6"
           >
-            <Link href="#inicio" className="text-sm font-medium hover:text-primary transition-colors">
+            <NavLink href="#inicio" className="text-sm font-medium hover:text-primary transition-colors">
               Inicio
-            </Link>
-            <Link href="#servicios" className="text-sm font-medium hover:text-primary transition-colors">
+            </NavLink>
+            <NavLink href="#servicios" className="text-sm font-medium hover:text-primary transition-colors">
               Servicios
-            </Link>
-            <Link href="#catalogo" className="text-sm font-medium hover:text-primary transition-colors">
+            </NavLink>
+            <NavLink href="#catalogo" className="text-sm font-medium hover:text-primary transition-colors">
               Catálogo
-            </Link>
-            <Link href="#nosotros" className="text-sm font-medium hover:text-primary transition-colors">
+            </NavLink>
+            <NavLink href="#nosotros" className="text-sm font-medium hover:text-primary transition-colors">
               Nosotros
-            </Link>
-            <Link href="#contacto" className="text-sm font-medium hover:text-primary transition-colors">
+            </NavLink>
+            <NavLink href="#contacto" className="text-sm font-medium hover:text-primary transition-colors">
               Contacto
-            </Link>
+            </NavLink>
           </motion.nav>
           <motion.div
             initial={{ x: 50, opacity: 0 }}
@@ -497,38 +499,79 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {[
-              { icon: Phone, title: "Teléfono", main: "+1 (555) 123-4567", sub1: "Lun - Vie: 8:00 AM - 6:00 PM", sub2: "Emergencias 24/7" },
-              { icon: Mail, title: "Email", main: "info@resetmultiservicios.com", sub1: "Respuesta en 24 horas", sub2: "Cotizaciones gratuitas" },
-              { icon: MapPin, title: "Ubicación", main: "Av. Principal 123", sub1: "Ciudad, Estado 12345", sub2: "Servicio a domicilio" }
-            ].map((contact, index) => (
-              <motion.div
-                key={index}
-                initial={{ y: 50, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <Card className="text-center h-full">
-                  <CardHeader>
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 10 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <contact.icon className="h-8 w-8 text-primary mx-auto mb-4" />
-                    </motion.div>
-                    <CardTitle>{contact.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-lg font-semibold">{contact.main}</p>
-                    <p className="text-sm text-muted-foreground">{contact.sub1}</p>
-                    <p className="text-sm text-muted-foreground">{contact.sub2}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Contact Information */}
+            <div className="space-y-8">
+              {[
+                { icon: Phone, title: "Teléfono", main: "993 208 1792", sub1: "Lun - Vie: 8:00 AM - 6:00 PM", sub2: "Emergencias 24/7" },
+                { icon: Mail, title: "Email", main: "info@resetmultiservicios.com", sub1: "Respuesta en 24 horas", sub2: "Cotizaciones gratuitas" },
+                { icon: MapPin, title: "Ubicación", main: "Reset - Tabasco, México", sub1: "Servicio a domicilio disponible", sub2: "Cobertura en todo el estado" }
+              ].map((contact, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ x: -50, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ x: 10, transition: { duration: 0.2 } }}
+                >
+                  <Card className="h-full">
+                    <CardHeader>
+                      <div className="flex items-center space-x-4">
+                        <motion.div
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="bg-primary/10 p-3 rounded-full"
+                        >
+                          <contact.icon className="h-6 w-6 text-primary" />
+                        </motion.div>
+                        <div className="text-left">
+                          <CardTitle className="text-lg">{contact.title}</CardTitle>
+                          <p className="text-lg font-semibold text-primary">{contact.main}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="text-sm text-muted-foreground">{contact.sub1}</p>
+                      <p className="text-sm text-muted-foreground">{contact.sub2}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Google Maps */}
+            <motion.div
+              initial={{ x: 50, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="lg:sticky lg:top-8"
+            >
+              <Card className="overflow-hidden h-full min-h-[400px]">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 text-primary" />
+                    Nuestra Ubicación
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="relative w-full h-[400px]">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d933.7951117585162!2d-92.94956584302976!3d17.99877940746598!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85edd7aad75c77ab%3A0xadca46b0dcb8e90c!2sReset!5e0!3m2!1ses-419!2smx!4v1690834567890!5m2!1ses-419!2smx"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="rounded-b-lg"
+                      title="Ubicación Reset Multiservicios - Tabasco, México"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
           <motion.div 
@@ -538,7 +581,8 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <motion.div
+            <motion.a
+              href="tel:9932081792"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="inline-block mr-4"
@@ -547,8 +591,9 @@ export default function HomePage() {
                 <Phone className="h-4 w-4 mr-2" />
                 Llamar Ahora
               </Button>
-            </motion.div>
-            <motion.div
+            </motion.a>
+            <motion.a
+              href="mailto:info@resetmultiservicios.com"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="inline-block"
@@ -557,7 +602,7 @@ export default function HomePage() {
                 <Mail className="h-4 w-4 mr-2" />
                 Enviar Email
               </Button>
-            </motion.div>
+            </motion.a>
           </motion.div>
         </div>
       </section>
@@ -589,8 +634,10 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-                <ResetLogo className="h-6 w-9" />
-                <span className="text-lg font-bold">RESET Multiservicios</span>
+                <NavLink href="#inicio" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                  <ResetLogo className="h-6 w-9" />
+                  <span className="text-lg font-bold">RESET Multiservicios</span>
+                </NavLink>
               </motion.div>
               <p className="text-sm text-muted-foreground mb-4">
                 Soluciones integrales en seguridad, mantenimiento y tecnología para tu hogar y negocio.
@@ -611,12 +658,22 @@ export default function HomePage() {
             </motion.div>
 
             {[
-              { title: "Servicios", items: ["Cámaras de Seguridad", "Aires Acondicionados", "Servicios de Informática", "Reparaciones Generales"] },
-              { title: "Empresa", items: ["Sobre Nosotros", "Nuestro Equipo", "Testimonios", "Garantías"] },
+              { title: "Servicios", items: [
+                  { text: "Cámaras de Seguridad", href: "#servicios" },
+                  { text: "Aires Acondicionados", href: "#servicios" },
+                  { text: "Servicios de Informática", href: "#servicios" },
+                  { text: "Reparaciones Generales", href: "#servicios" }
+                ]},
+              { title: "Empresa", items: [
+                  { text: "Sobre Nosotros", href: "#nosotros" },
+                  { text: "Nuestro Equipo", href: "#nosotros" },
+                  { text: "Testimonios", href: "#nosotros" },
+                  { text: "Garantías", href: "#nosotros" }
+                ]},
               { 
                 title: "Contacto", 
                 items: [
-                  { icon: Phone, text: "+1 (555) 123-4567" },
+                  { icon: Phone, text: "993 208 1792" },
                   { icon: Mail, text: "info@resetmultiservicios.com" },
                   { icon: Clock, text: "Lun-Vie 8AM-6PM" }
                 ]
@@ -646,14 +703,20 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    {(section.items as string[]).map((item, itemIndex) => (
+                    {(section.items as any[]).map((item, itemIndex) => (
                       <motion.li 
                         key={itemIndex}
                         whileHover={{ x: 5 }}
                         transition={{ duration: 0.2 }}
                         className="cursor-pointer hover:text-primary"
                       >
-                        {item}
+                        {item.href ? (
+                          <NavLink href={item.href} className="hover:text-primary transition-colors">
+                            {item.text}
+                          </NavLink>
+                        ) : (
+                          item.text || item
+                        )}
                       </motion.li>
                     ))}
                   </ul>

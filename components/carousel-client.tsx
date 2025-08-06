@@ -38,7 +38,10 @@ const carouselImages: StaticSlide[] = [
 export default function CarouselClient() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [mounted, setMounted] = useState(false)
-  const { slides: carouselSlides, loading: carouselLoading, refetch: refetchSlides } = useCarouselSlides(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  
+  // Solo usar el hook después del mount
+  const { slides: carouselSlides, loading: carouselLoading, refetch: refetchSlides } = useCarouselSlides(mounted)
 
   useEffect(() => {
     setMounted(true)
@@ -54,11 +57,13 @@ export default function CarouselClient() {
     }
   }, [mounted, refetchSlides])
 
-  // Determinar qué slides usar - siempre usa los dinámicos si están disponibles
+  // Determinar qué slides usar - con manejo mejorado de hidratación
   const activeSlides = useMemo(() => {
-    if (!mounted) return carouselImages // Durante SSR usar slides estáticos para evitar hidratación
+    // Durante SSR o primera carga, usar slides estáticos
+    if (!mounted || carouselLoading) return carouselImages
+    // Después de cargar, usar dinámicos si están disponibles, sino estáticos
     return carouselSlides && carouselSlides.length > 0 ? carouselSlides : carouselImages
-  }, [mounted, carouselSlides])
+  }, [mounted, carouselSlides, carouselLoading])
 
   useEffect(() => {
     if (mounted && activeSlides.length > 0) {
@@ -76,6 +81,17 @@ export default function CarouselClient() {
     }
   }, [activeSlides.length, currentSlide])
 
+  // Smooth transition when slides change from API
+  useEffect(() => {
+    if (mounted && carouselSlides && carouselSlides.length > 0) {
+      setIsTransitioning(true)
+      const timer = setTimeout(() => {
+        setIsTransitioning(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [mounted, carouselSlides])
+
   const nextSlide = () => {
     if (activeSlides.length > 0) {
       setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
@@ -88,8 +104,8 @@ export default function CarouselClient() {
     }
   }
 
-  // Mostrar loader solo durante la carga de datos del backend
-  if (carouselLoading && mounted) {
+  // Mostrar loader solo si realmente estamos cargando después de montar
+  if (carouselLoading && mounted && !carouselSlides) {
     return (
       <section className="relative h-[600px] overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -103,8 +119,8 @@ export default function CarouselClient() {
   }
 
   return (
-    <section id="inicio" className="relative h-[600px] overflow-hidden" suppressHydrationWarning={true}>
-      <div className="relative w-full h-full">
+    <section id="inicio" className="relative h-[600px] overflow-hidden" suppressHydrationWarning>
+      <div className={`relative w-full h-full ${isTransitioning ? 'opacity-90' : 'opacity-100'} transition-opacity duration-500`}>
         {activeSlides.map((slide, index) => {
           // Determinar si es slide dinámico (del backend) o estático
           const isCarouselSlide = slide && typeof slide === 'object' && ('id' in slide || '_id' in slide)
