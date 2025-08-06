@@ -214,7 +214,11 @@ class ApiClient {
   // Obtener slides activos para el frontend público
   async getActiveCarouselSlides(): Promise<CarouselSlide[]> {
     const response: AxiosResponse<CarouselSlide[]> = await this.api.get('/api/v1/carousel/slides/active');
-    return response.data;
+    // Mapear _id a id para compatibilidad con el frontend
+    return response.data.map(slide => ({
+      ...slide,
+      id: (slide as any)._id || slide.id
+    }));
   }
 
   // Obtener todos los slides (admin)
@@ -222,7 +226,11 @@ class ApiClient {
     const response: AxiosResponse<CarouselSlide[]> = await this.api.get('/api/v1/carousel/slides', {
       params: { active_only: activeOnly }
     });
-    return response.data;
+    // Mapear _id a id para compatibilidad con el frontend
+    return response.data.map(slide => ({
+      ...slide,
+      id: (slide as any)._id || slide.id
+    }));
   }
 
   // Obtener slide por ID

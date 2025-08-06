@@ -218,21 +218,39 @@ export const useCarouselSlides = (activeOnly: boolean = false) => {
       setLoading(true);
       setError(null);
       
+      console.log('🔄 Fetching carousel slides...', { activeOnly });
+      console.log('🌐 API Base URL:', process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      
       let slidesData: CarouselSlide[];
       if (activeOnly) {
+        console.log('📡 Calling getActiveCarouselSlides...');
         slidesData = await apiClient.getActiveCarouselSlides();
       } else {
+        console.log('📡 Calling getAllCarouselSlides...');
         slidesData = await apiClient.getAllCarouselSlides();
       }
       
+      console.log('✅ Carousel slides received:', slidesData.length, 'slides');
+      console.log('📊 Slides data:', slidesData);
+      
       // Procesar URLs de imágenes para que sean completas
       const processedSlides = processCarouselSlideImages(slidesData);
+      console.log('🖼️ Processed slides:', processedSlides.length, 'slides');
+      console.log('🖼️ First processed slide:', processedSlides[0]);
+      
       setSlides(processedSlides);
     } catch (err: any) {
-      console.error('Error fetching carousel slides:', err);
+      console.error('❌ Error fetching carousel slides:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url
+      });
+      
       setError(err.message || 'Error al cargar slides del carrusel');
       
-      // Fallback a datos mock en caso de error
+      // Fallback a datos vacíos en caso de error
       setSlides([]);
     } finally {
       setLoading(false);
@@ -244,6 +262,7 @@ export const useCarouselSlides = (activeOnly: boolean = false) => {
   }, [activeOnly]);
 
   const refetch = () => {
+    console.log('🔄 Refetching carousel slides...');
     fetchSlides();
   };
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react"
@@ -54,8 +54,11 @@ export default function CarouselClient() {
     }
   }, [mounted, refetchSlides])
 
-  // Usar slides dinámicos si están disponibles, sino usar estáticos como fallback
-  const activeSlides = mounted && carouselSlides && carouselSlides.length > 0 ? carouselSlides : carouselImages
+  // Determinar qué slides usar - siempre usa los dinámicos si están disponibles
+  const activeSlides = useMemo(() => {
+    if (!mounted) return carouselImages // Durante SSR usar slides estáticos para evitar hidratación
+    return carouselSlides && carouselSlides.length > 0 ? carouselSlides : carouselImages
+  }, [mounted, carouselSlides])
 
   useEffect(() => {
     if (mounted && activeSlides.length > 0) {
@@ -66,30 +69,45 @@ export default function CarouselClient() {
     }
   }, [activeSlides.length, mounted])
 
+  // Reset currentSlide when slides change to avoid index out of bounds
+  useEffect(() => {
+    if (activeSlides.length > 0 && currentSlide >= activeSlides.length) {
+      setCurrentSlide(0)
+    }
+  }, [activeSlides.length, currentSlide])
+
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
+    if (activeSlides.length > 0) {
+      setCurrentSlide((prev) => (prev + 1) % activeSlides.length)
+    }
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length)
+    if (activeSlides.length > 0) {
+      setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length)
+    }
   }
 
-  if (!mounted) {
+  // Mostrar loader solo durante la carga de datos del backend
+  if (carouselLoading && mounted) {
     return (
       <section className="relative h-[600px] overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <Loader className="h-8 w-8 animate-spin" />
+          <div className="text-center">
+            <Loader className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p className="text-gray-500">Cargando slides desde base de datos...</p>
+          </div>
         </div>
       </section>
     )
   }
 
   return (
-    <section id="inicio" className="relative h-[600px] overflow-hidden">
+    <section id="inicio" className="relative h-[600px] overflow-hidden" suppressHydrationWarning={true}>
       <div className="relative w-full h-full">
         {activeSlides.map((slide, index) => {
           // Determinar si es slide dinámico (del backend) o estático
-          const isCarouselSlide = slide && typeof slide === 'object' && 'id' in slide
+          const isCarouselSlide = slide && typeof slide === 'object' && ('id' in slide || '_id' in slide)
 
           let slideData
           if (isCarouselSlide) {
@@ -103,7 +121,7 @@ export default function CarouselClient() {
               buttonText: carouselSlide.button_text,
               buttonLink: carouselSlide.button_link,
               showButton: carouselSlide.show_button || false,
-              key: carouselSlide.id
+              key: carouselSlide.id || carouselSlide._id
             }
           } else {
             // Slide estático
