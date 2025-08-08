@@ -2,6 +2,8 @@
 
 Frontend de la aplicación web de RESET Multiservicios desarrollado con Next.js 15.
 
+**🌐 Deployed on Vercel with Railway backend integration**
+
 ## 🚀 Características
 
 - ⚡ Next.js 15 con App Router
