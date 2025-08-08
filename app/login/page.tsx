@@ -50,7 +50,11 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`
+      console.log('🔗 API URL:', apiUrl)
+      console.log('🌍 Environment:', process.env.NEXT_PUBLIC_ENVIRONMENT)
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -61,7 +65,12 @@ export default function LoginPage() {
         }),
       })
 
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response ok:', response.ok)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.log('❌ Error response:', errorText)
         throw new Error('Credenciales inválidas')
       }
 
