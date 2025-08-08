@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Service, Product, CarouselSlide, CarouselSlideCreate, CarouselSlideUpdate } from '@/types';
+import { Service, Product, ServiceCreate, ServiceUpdate, ProductCreate, ProductUpdate, CarouselSlide, CarouselSlideCreate, CarouselSlideUpdate } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { processCarouselSlideImages } from '@/lib/image-utils';
 
@@ -10,52 +10,48 @@ const mockServices: Service[] = [
     name: 'Sistemas de Seguridad',
     description: 'Cámaras IP, CCTV, alarmas y control de acceso',
     price: 299,
-    category: 'Seguridad',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
-    estimatedDuration: 120,
+    category: 'seguridad',
+    icon: 'shield',
+    is_active: true,
+    estimated_duration: 120,
     features: ['Cámaras HD/4K', 'Monitoreo remoto', 'Grabación en la nube', 'Instalación profesional'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '2',
     name: 'Aires Acondicionados',
     description: 'Instalación, reparación y mantenimiento',
     price: 599,
-    category: 'Climatización',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
-    estimatedDuration: 180,
+    category: 'climatizacion',
+    icon: 'snowflake',
+    is_active: true,
+    estimated_duration: 180,
     features: ['Todas las marcas', 'Servicio 24/7', 'Repuestos originales', 'Garantía extendida'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '3',
     name: 'Servicios de Informática',
     description: 'Soporte técnico y soluciones IT',
     price: 149,
-    category: 'Informática',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
-    estimatedDuration: 90,
+    category: 'informatica',
+    icon: 'monitor',
+    is_active: true,
+    estimated_duration: 90,
     features: ['Reparación de PC', 'Redes y WiFi', 'Software y hardware', 'Consultoría IT'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '4',
     name: 'Reparaciones Generales',
     description: 'Mantenimiento integral para hogar y negocio',
     price: 99,
-    category: 'Mantenimiento',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
-    estimatedDuration: 60,
+    category: 'mantenimiento',
+    icon: 'wrench',
+    is_active: true,
+    estimated_duration: 60,
     features: ['Electricidad', 'Plomería', 'Carpintería', 'Pintura y acabados'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
 ];
 
@@ -66,12 +62,11 @@ const mockProducts: Product[] = [
     description: 'Cámara de seguridad con resolución 4K',
     price: 299,
     category: 'Seguridad',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
+    image_url: '/placeholder.svg?height=300&width=300',
+    is_active: true,
     stock: 15,
     features: ['Resolución 4K', 'Visión nocturna', 'Audio bidireccional', 'Resistente al agua'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '2',
@@ -79,12 +74,11 @@ const mockProducts: Product[] = [
     description: 'Kit completo de videovigilancia',
     price: 899,
     category: 'Seguridad',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
+    image_url: '/placeholder.svg?height=300&width=300',
+    is_active: true,
     stock: 8,
     features: ['4 cámaras HD', 'DVR incluido', 'Cables y accesorios', 'App móvil gratuita'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '3',
@@ -92,12 +86,11 @@ const mockProducts: Product[] = [
     description: 'Aire acondicionado Split inverter',
     price: 599,
     category: 'Climatización',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
+    image_url: '/placeholder.svg?height=300&width=300',
+    is_active: true,
     stock: 12,
     features: ['Inverter', 'Bajo consumo', 'Control remoto', 'Instalación incluida'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
   {
     id: '4',
@@ -105,12 +98,11 @@ const mockProducts: Product[] = [
     description: 'Sistema de alarma inalámbrico',
     price: 399,
     category: 'Seguridad',
-    imageUrl: '/placeholder.svg?height=300&width=300',
-    isActive: true,
+    image_url: '/placeholder.svg?height=300&width=300',
+    is_active: true,
     stock: 20,
     features: ['Sensores inalámbricos', 'Panel táctil', 'Notificaciones móvil', 'Batería de respaldo'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    created_at: new Date().toISOString(),
   },
 ];
 
@@ -120,29 +112,40 @@ export const useServices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        setLoading(true);
-        // TODO: Reemplazar con llamada real a la API
-        // const response = await apiClient.getServices();
-        // setServices(response.items);
-        
-        // Por ahora usar datos mock
-        setTimeout(() => {
-          setServices(mockServices);
-          setLoading(false);
-        }, 1000);
-      } catch (err) {
-        setError('Error al cargar servicios');
-        setLoading(false);
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('📡 Cargando servicios desde el backend...');
+      const services = await apiClient.getServices();
+      
+      if (services) {
+        setServices(services);
+        console.log('✅ Servicios cargados exitosamente:', services.length);
+      } else {
+        throw new Error('No se encontraron servicios');
       }
-    };
+      
+    } catch (err) {
+      console.error('Error al cargar servicios:', err);
+      setError('Error al cargar servicios');
+      // Fallback a datos mock en caso de error
+      setServices(mockServices);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchServices();
   }, []);
 
-  return { services, loading, error, refetch: () => window.location.reload() };
+  const refetch = async () => {
+    await fetchServices();
+  };
+
+  return { services, loading, error, refetch };
 };
 
 // Hook para productos
@@ -151,29 +154,36 @@ export const useProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        // TODO: Reemplazar con llamada real a la API
-        // const response = await apiClient.getProducts();
-        // setProducts(response.items);
-        
-        // Por ahora usar datos mock
-        setTimeout(() => {
-          setProducts(mockProducts);
-          setLoading(false);
-        }, 1000);
-      } catch (err) {
-        setError('Error al cargar productos');
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Llamada real a la API
+      const response = await apiClient.getProducts();
+      // Verificar si la respuesta es un array o un objeto con data
+      const productsData = Array.isArray(response) ? response : response?.data || [];
+      setProducts(productsData);
+      
+    } catch (err) {
+      console.error('Error al cargar productos:', err);
+      setError('Error al cargar productos');
+      // Fallback a datos mock en caso de error
+      setProducts(mockProducts);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
 
-  return { products, loading, error, refetch: () => window.location.reload() };
+  const refetch = async () => {
+    await fetchProducts();
+  };
+
+  return { products, loading, error, refetch };
 };
 
 // Hook para categorías
@@ -378,5 +388,165 @@ export const useCarouselManagement = () => {
     deleteSlide,
     toggleSlideStatus,
     reorderSlides,
+  };
+};
+
+// Hook para gestión de servicios (admin)
+export const useServiceManagement = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createService = async (serviceData: ServiceCreate): Promise<Service | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const newService = await apiClient.createService(serviceData);
+      return newService;
+    } catch (err: any) {
+      console.error('Error creating service:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al crear servicio');
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateService = async (serviceId: string, serviceData: ServiceUpdate): Promise<Service | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedService = await apiClient.updateService(serviceId, serviceData);
+      return updatedService;
+    } catch (err: any) {
+      console.error('Error updating service:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al actualizar servicio');
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteService = async (serviceId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await apiClient.deleteService(serviceId);
+      return true;
+    } catch (err: any) {
+      console.error('Error deleting service:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al eliminar servicio');
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    error,
+    createService,
+    updateService,
+    deleteService,
+  };
+};
+
+// Hook para gestión de productos (admin)
+export const useProductManagement = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createProduct = async (productData: ProductCreate): Promise<Product | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const newProduct = await apiClient.createProduct(productData);
+      return newProduct;
+    } catch (err: any) {
+      console.error('Error creating product:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al crear producto');
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProduct = async (productId: string, productData: ProductUpdate): Promise<Product | null> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedProduct = await apiClient.updateProduct(productId, productData);
+      return updatedProduct;
+    } catch (err: any) {
+      console.error('Error updating product:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al actualizar producto');
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (productId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await apiClient.deleteProduct(productId);
+      return true;
+    } catch (err: any) {
+      console.error('Error deleting product:', err);
+      if (err.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        setError('Sesión expirada. Redirigiendo al login...');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Error al eliminar producto');
+      }
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    loading,
+    error,
+    createProduct,
+    updateProduct,
+    deleteProduct,
   };
 };

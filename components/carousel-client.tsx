@@ -118,6 +118,16 @@ export default function CarouselClient() {
     )
   }
 
+  // Evitar hidración problemática: en SSR y en el primer render del cliente (antes de useEffect)
+  // renderizamos solo un contenedor estático que coincide exactamente en servidor y cliente.
+  if (!mounted) {
+    return (
+      <section id="inicio" className="relative h-[600px] overflow-hidden" suppressHydrationWarning>
+        <div className="relative w-full h-full" />
+      </section>
+    )
+  }
+
   return (
     <section id="inicio" className="relative h-[600px] overflow-hidden" suppressHydrationWarning>
       <div className={`relative w-full h-full ${isTransitioning ? 'opacity-90' : 'opacity-100'} transition-opacity duration-500`}>
@@ -182,17 +192,21 @@ export default function CarouselClient() {
                           </Button>
                         </Link>
                       ) : (
-                        <Button size="lg" className="bg-primary hover:bg-primary/90">
-                          Ver Servicios
-                        </Button>
+                        <Link href="#servicios">
+                          <Button size="lg" className="bg-primary hover:bg-primary/90">
+                            Ver Servicios
+                          </Button>
+                        </Link>
                       )}
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        className="bg-white/10 border-white text-white hover:bg-white/20"
-                      >
-                        Solicitar Cotización
-                      </Button>
+                      <Link href={`https://wa.me/${'+5219932081792'.replace(/\D/g, '')}?text=${encodeURIComponent('Hola! Quiero una cotización.')}`}>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="bg-white/10 border-white text-white hover:bg-white/20"
+                        >
+                          Solicitar Cotización
+                        </Button>
+                      </Link>
                     </div>
                   )}
                 </div>

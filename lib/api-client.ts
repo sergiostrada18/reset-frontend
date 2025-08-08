@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { Service, Product, User, AuthResponse, LoginRequest, RegisterRequest, ApiResponse, PaginatedResponse, CarouselSlide, CarouselSlideCreate, CarouselSlideUpdate } from '@/types';
+import { Service, ServiceCreate, Product, User, AuthResponse, LoginRequest, RegisterRequest, ApiResponse, PaginatedResponse, CarouselSlide, CarouselSlideCreate, CarouselSlideUpdate } from '@/types';
 
 class ApiClient {
   private api: AxiosInstance;
@@ -14,26 +14,56 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json',
       },
-      timeout: 30000,
+      // Reduce timeout to fail fast when backend is unreachable
+      timeout: 8000,
     });
 
     // Interceptor para agregar token de autenticación
     this.api.interceptors.request.use(
       (config) => {
         const token = this.getAuthToken();
+        console.log('🔑 Request interceptor - Token check:', {
+          hasToken: !!token,
+          tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token',
+          url: config.url,
+          method: config.method?.toUpperCase()
+        });
+        
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+          console.log('✅ Authorization header added');
+        } else {
+          console.log('❌ No token found - Authorization header NOT added');
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        console.error('❌ Request interceptor error:', error);
+        return Promise.reject(error);
+      }
     );
 
     // Interceptor para manejar errores de respuesta
     this.api.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.log('✅ Response success:', {
+          status: response.status,
+          url: response.config.url,
+          method: response.config.method?.toUpperCase()
+        });
+        return response;
+      },
       (error) => {
+        console.error('❌ Response error:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          url: error.config?.url,
+          method: error.config?.method?.toUpperCase(),
+          data: error.response?.data
+        });
+        
         if (error.response?.status === 401) {
+          console.log('🚫 401 Unauthorized - Clearing token and redirecting');
           // Token expirado o inválido
           this.clearAuthToken();
           // Solo redirigir si estamos en el cliente
@@ -74,8 +104,10 @@ class ApiClient {
     formData.append('username', credentials.email);
     formData.append('password', credentials.password);
 
-    const response: AxiosResponse<AuthResponse> = await this.api.post(
-      '/auth/login',
+    console.log('🔑 Attempting login for:', credentials.email);
+
+    const response: AxiosResponse<any> = await this.api.post(
+      '/api/v1/auth/login',
       formData,
       {
         headers: {
@@ -84,14 +116,34 @@ class ApiClient {
       }
     );
 
-    // Guardar token automáticamente
-    this.setAuthToken(response.data.accessToken);
+    console.log('✅ Login response received:', response.data);
+
+    // El backend devuelve access_token, no accessToken
+    const token = response.data.access_token;
     
-    return response.data;
+    if (!token) {
+      throw new Error('No se recibió token de autenticación');
+    }
+
+    // Guardar token y datos de usuario
+    this.setAuthToken(token);
+    
+    if (response.data.user) {
+      localStorage.setItem('user_data', JSON.stringify(response.data.user));
+    }
+    
+    console.log('💾 Token and user data saved');
+
+    // Transformar la respuesta al formato esperado por el frontend
+    return {
+      accessToken: token,
+      tokenType: response.data.token_type || 'bearer',
+      user: response.data.user
+    };
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response: AxiosResponse<AuthResponse> = await this.api.post('/auth/register', userData);
+    const response: AxiosResponse<AuthResponse> = await this.api.post('/api/v1/auth/register', userData);
     
     // Guardar token automáticamente
     this.setAuthToken(response.data.accessToken);
@@ -100,13 +152,13 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response: AxiosResponse<User> = await this.api.get('/auth/me');
+    const response: AxiosResponse<User> = await this.api.get('/api/v1/auth/me');
     return response.data;
   }
 
   async logout(): Promise<void> {
     try {
-      await this.api.post('/auth/logout');
+      await this.api.post('/api/v1/auth/logout');
     } finally {
       this.clearAuthToken();
     }
@@ -118,34 +170,34 @@ class ApiClient {
     limit?: number;
     category?: string;
     isActive?: boolean;
-  }): Promise<PaginatedResponse<Service>> {
-    const response: AxiosResponse<PaginatedResponse<Service>> = await this.api.get('/services', {
+  }): Promise<Service[]> {
+    const response: AxiosResponse<Service[]> = await this.api.get('/api/v1/services/', {
       params,
     });
     return response.data;
   }
 
   async getServiceById(id: string): Promise<Service> {
-    const response: AxiosResponse<Service> = await this.api.get(`/services/${id}`);
+    const response: AxiosResponse<Service> = await this.api.get(`/api/v1/services/${id}`);
     return response.data;
   }
 
-  async createService(serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>): Promise<Service> {
-    const response: AxiosResponse<Service> = await this.api.post('/services', serviceData);
+  async createService(serviceData: ServiceCreate): Promise<Service> {
+    const response: AxiosResponse<Service> = await this.api.post('/api/v1/services/', serviceData);
     return response.data;
   }
 
   async updateService(id: string, serviceData: Partial<Service>): Promise<Service> {
-    const response: AxiosResponse<Service> = await this.api.put(`/services/${id}`, serviceData);
+    const response: AxiosResponse<Service> = await this.api.put(`/api/v1/services/${id}`, serviceData);
     return response.data;
   }
 
   async deleteService(id: string): Promise<void> {
-    await this.api.delete(`/services/${id}`);
+    await this.api.delete(`/api/v1/services/${id}`);
   }
 
   async getServiceCategories(): Promise<string[]> {
-    const response: AxiosResponse<string[]> = await this.api.get('/services/categories');
+    const response: AxiosResponse<string[]> = await this.api.get('/api/v1/services/categories');
     return response.data;
   }
 
@@ -155,34 +207,42 @@ class ApiClient {
     limit?: number;
     category?: string;
     isActive?: boolean;
-  }): Promise<PaginatedResponse<Product>> {
-    const response: AxiosResponse<PaginatedResponse<Product>> = await this.api.get('/products', {
+  }): Promise<Product[]> {
+    const response: AxiosResponse<Product[]> = await this.api.get('/api/v1/products/', {
       params,
     });
     return response.data;
   }
 
   async getProductById(id: string): Promise<Product> {
-    const response: AxiosResponse<Product> = await this.api.get(`/products/${id}`);
+    const response: AxiosResponse<Product> = await this.api.get(`/api/v1/products/${id}`);
     return response.data;
   }
 
   async createProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
-    const response: AxiosResponse<Product> = await this.api.post('/products', productData);
-    return response.data;
+    try {
+      const response: AxiosResponse<Product> = await this.api.post('/api/v1/products/', productData);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ createProduct error detail:', {
+        status: error.response?.status,
+        detail: error.response?.data?.detail ?? error.response?.data
+      });
+      throw error;
+    }
   }
 
   async updateProduct(id: string, productData: Partial<Product>): Promise<Product> {
-    const response: AxiosResponse<Product> = await this.api.put(`/products/${id}`, productData);
+    const response: AxiosResponse<Product> = await this.api.put(`/api/v1/products/${id}`, productData);
     return response.data;
   }
 
   async deleteProduct(id: string): Promise<void> {
-    await this.api.delete(`/products/${id}`);
+    await this.api.delete(`/api/v1/products/${id}`);
   }
 
   async getProductCategories(): Promise<string[]> {
-    const response: AxiosResponse<string[]> = await this.api.get('/products/categories');
+    const response: AxiosResponse<string[]> = await this.api.get('/api/v1/products/categories');
     return response.data;
   }
 
@@ -192,7 +252,7 @@ class ApiClient {
     minPrice?: number;
     maxPrice?: number;
   }): Promise<Service[]> {
-    const response: AxiosResponse<Service[]> = await this.api.get('/services/search', {
+    const response: AxiosResponse<Service[]> = await this.api.get('/api/v1/services/search', {
       params: { q: query, ...filters },
     });
     return response.data;
@@ -203,7 +263,7 @@ class ApiClient {
     minPrice?: number;
     maxPrice?: number;
   }): Promise<Product[]> {
-    const response: AxiosResponse<Product[]> = await this.api.get('/products/search', {
+    const response: AxiosResponse<Product[]> = await this.api.get('/api/v1/products/search', {
       params: { q: query, ...filters },
     });
     return response.data;
@@ -291,6 +351,18 @@ class ApiClient {
   // Eliminar imagen (admin)
   async deleteImage(filename: string): Promise<{ success: boolean; message: string }> {
     const response = await this.api.delete(`/api/v1/uploads/images/${filename}`);
+    return response.data;
+  }
+
+  // === CONTACT ===
+  async submitContactMinimal(data: { name: string; phone: string; message?: string }): Promise<{ message: string; status: string }> {
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      message: data.message ?? "",
+      // backend allows email null; we omit it here
+    } as any;
+    const response = await this.api.post('/api/v1/contact/contact', payload);
     return response.data;
   }
 }

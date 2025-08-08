@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useServices, useServiceManagement } from "@/hooks/use-data"
 import { ServiceModal } from "@/components/ui/service-modal"
-import { IconDisplay } from "@/components/ui/icon-selector"
 import { Service, ServiceCreate, ServiceUpdate } from "@/types"
 
 export default function ServicesManagement() {
@@ -287,13 +286,10 @@ export default function ServicesManagement() {
                   {filteredServices.map((service) => (
                     <TableRow key={service.id}>
                       <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <IconDisplay iconName={service.icon || "shield"} size={20} />
-                          <div>
-                            <div className="font-medium">{service.name}</div>
-                            <div className="text-sm text-muted-foreground truncate max-w-xs">
-                              {service.description}
-                            </div>
+                        <div>
+                          <div className="font-medium">{service.name}</div>
+                          <div className="text-sm text-muted-foreground truncate max-w-xs">
+                            {service.description}
                           </div>
                         </div>
                       </TableCell>

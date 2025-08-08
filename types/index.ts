@@ -5,12 +5,32 @@ export interface Service {
   description: string;
   price: number;
   category: string;
-  imageUrl?: string;
-  isActive: boolean;
-  estimatedDuration: number; // en minutos
+  icon?: string; // Nombre del icono en lugar de image_url
+  is_active: boolean;
+  estimated_duration: number; // en minutos
   features: string[];
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+}
+
+export interface ServiceCreate {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  icon?: string; // Nombre del icono
+  estimated_duration: number;
+  features: string[];
+}
+
+export interface ServiceUpdate {
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  icon?: string; // Nombre del icono
+  is_active?: boolean;
+  estimated_duration?: number;
+  features?: string[];
 }
 
 // Tipos para productos
@@ -20,12 +40,35 @@ export interface Product {
   description: string;
   price: number;
   category: string;
-  imageUrl?: string;
-  isActive: boolean;
+  icon?: string; // Icono en lugar de image_url
+  image?: string; // URL de imagen del producto
+  is_active: boolean;
   stock: number;
   features: string[];
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+}
+
+export interface ProductCreate {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  icon?: string; // Icono en lugar de image_url
+  image?: string; // URL de imagen cargada
+  stock: number;
+  features: string[];
+}
+
+export interface ProductUpdate {
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  icon?: string; // Icono en lugar de image_url
+  image?: string; // URL de imagen actualizada
+  is_active?: boolean;
+  stock?: number;
+  features?: string[];
 }
 
 // Tipos para autenticación
@@ -42,9 +85,14 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   tokenType: string;
-  userId: string;
-  userEmail: string;
-  userName: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    created_at: string;
+    is_active: boolean;
+  };
 }
 
 export interface LoginRequest {

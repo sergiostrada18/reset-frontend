@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCarouselSlides, useCarouselManagement } from "@/hooks/use-data"
 import { CarouselSlideCreate, CarouselSlideUpdate, CarouselSlide } from "@/types"
@@ -207,16 +209,24 @@ export default function CarouselManagement() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Carousel</h1>
-          <p className="text-gray-600 mt-2">
-            Administra los slides del carousel de la página principal
-          </p>
-        </div>
-        
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/admin">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Volver al Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Carousel</h1>
+                <p className="text-gray-600 mt-2">Administra los slides del carousel de la página principal</p>
+              </div>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={openCreateDialog}>
               <Plus className="h-4 w-4 mr-2" />
@@ -319,6 +329,8 @@ export default function CarouselManagement() {
           </DialogContent>
         </Dialog>
       </div>
+      </div>
+    </div>
 
       <SlidesList
         slides={slides || []}

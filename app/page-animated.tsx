@@ -315,7 +315,7 @@ export default function HomePage() {
                   : `$${(product as Product).price}`;
                 const productImage = isStaticProduct 
                   ? (product as StaticProduct).image 
-                  : (product as Product).imageUrl || "/placeholder.svg";
+                  : (product as Product).image_url || "/placeholder.svg";
                 const productFeatures = product.features;
 
                 return (

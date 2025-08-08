@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { StatCard } from "@/components/ui/stat-card"
 import { useServices, useProducts } from "@/hooks/use-data"
+import { DebugAuth } from "@/components/debug-auth"
 
 export default function AdminDashboard() {
   const [mounted, setMounted] = useState(false)
@@ -294,6 +295,9 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Debug Authentication Component */}
+          <DebugAuth />
         </main>
       </div>
     </div>

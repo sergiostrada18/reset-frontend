@@ -4,9 +4,9 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'RESET Multiservicios - Servicios Técnicos Profesionales',
+  description: 'Servicios técnicos especializados en seguridad, climatización, informática y mantenimiento. Atención profesional y garantizada.',
+  generator: 'Next.js',
 }
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }

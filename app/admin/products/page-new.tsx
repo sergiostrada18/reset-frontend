@@ -45,7 +45,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useProducts, useProductManagement } from "@/hooks/use-data"
 import { ProductModal } from "@/components/ui/product-modal"
-import { IconDisplay } from "@/components/ui/icon-selector"
 import { Product, ProductCreate, ProductUpdate } from "@/types"
 
 export default function ProductsManagement() {
@@ -309,13 +308,10 @@ export default function ProductsManagement() {
                     return (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <IconDisplay iconName={product.icon || "monitor"} size={20} />
-                            <div>
-                              <div className="font-medium">{product.name}</div>
-                              <div className="text-sm text-muted-foreground truncate max-w-xs">
-                                {product.description}
-                              </div>
+                          <div>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-sm text-muted-foreground truncate max-w-xs">
+                              {product.description}
                             </div>
                           </div>
                         </TableCell>

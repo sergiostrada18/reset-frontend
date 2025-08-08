@@ -1,8 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import type React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { NavLink } from "@/components/nav-link"
+import { IconDisplay } from "@/components/ui/icon-selector"
+import { WhatsAppButton } from "@/components/whatsapp-button"
 import { motion } from "framer-motion"
 import {
   ChevronLeft,
@@ -27,6 +31,7 @@ import { Badge } from "@/components/ui/badge"
 import { useServices, useProducts } from "@/hooks/use-data"
 import { Service, Product } from "@/types"
 import CarouselClient from "@/components/carousel-client"
+// import apiClient from "@/lib/api-client" // contacto deshabilitado temporalmente
 
 // Interfaces locales para datos estáticos
 interface StaticService {
@@ -126,6 +131,7 @@ const products: StaticProduct[] = [
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
+  const [currentSection, setCurrentSection] = useState<'inicio' | 'servicios' | 'catalogo' | 'nosotros' | 'contacto'>('inicio')
   const { services: backendServices, loading: servicesLoading, error: servicesError } = useServices()
   const { products: backendProducts, loading: productsLoading, error: productsError } = useProducts()
 
@@ -134,8 +140,16 @@ export default function HomePage() {
     setMounted(true)
   }, [])
 
+  // Función para abrir WhatsApp con mensaje personalizado
+  const openWhatsApp = (message: string) => {
+    const phoneNumber = "+5219932081792" // Número real de RESET Multiservicios
+    const encodedMessage = encodeURIComponent(message)
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodedMessage}`
+    window.open(whatsappUrl, '_blank')
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" suppressHydrationWarning>
       {/* Header */}
       <motion.header 
         initial={{ y: -100, opacity: 0 }}
@@ -173,18 +187,16 @@ export default function HomePage() {
             <NavLink href="#nosotros" className="text-sm font-medium hover:text-primary transition-colors">
               Nosotros
             </NavLink>
-            <NavLink href="#contacto" className="text-sm font-medium hover:text-primary transition-colors">
-              Contacto
-            </NavLink>
+            {/** Contacto deshabilitado temporalmente */}
           </motion.nav>
           <motion.div
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <Button>
+            <Button onClick={() => openWhatsApp("Hola! Me gustaría más información.")}>
               <Phone className="h-4 w-4 mr-2" />
-              Llamar Ahora
+              WhatsApp
             </Button>
           </motion.div>
         </div>
@@ -220,8 +232,10 @@ export default function HomePage() {
                 Error al cargar servicios: {servicesError}
               </div>
             ) : (
-              (backendServices && backendServices.length > 0 ? backendServices : services).map((service, index) => {
-                const isStaticService = 'icon' in service;
+              (backendServices && backendServices.length > 0 ? backendServices : services)
+                .slice(0, 12)
+                .map((service, index) => {
+                const isStaticService = 'title' in service; // Los servicios estáticos tienen 'title', los del backend tienen 'name'
                 const serviceTitle = isStaticService ? (service as StaticService).title : (service as Service).name;
                 const serviceDescription = service.description;
                 const serviceFeatures = isStaticService 
@@ -249,6 +263,12 @@ export default function HomePage() {
                               const IconComponent = (service as StaticService).icon;
                               return <IconComponent className="h-8 w-8 text-primary" />;
                             })()
+                          ) : mounted ? (
+                            <IconDisplay 
+                              iconName={(service as Service).icon || "wrench"} 
+                              className="text-primary" 
+                              size={32} 
+                            />
                           ) : (
                             <Wrench className="h-8 w-8 text-primary" />
                           )}
@@ -279,6 +299,19 @@ export default function HomePage() {
               })
             )}
           </div>
+          
+          {/* Enlace para ver todos los servicios */}
+          {((backendServices && backendServices.length > 12) || (!backendServices && services.length > 12)) && (
+            <div className="text-center mt-12">
+              <Link
+                href="/servicios"
+                className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Ver todos los servicios
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -309,15 +342,14 @@ export default function HomePage() {
                 Error al cargar productos: {productsError}
               </div>
             ) : (
-              (backendProducts && backendProducts.length > 0 ? backendProducts : products).map((product, index) => {
+              (backendProducts && backendProducts.length > 0 ? backendProducts : products)
+                .slice(0, 8)
+                .map((product, index) => {
                 const isStaticProduct = 'image' in product && typeof (product as any).price === 'string';
                 const productName = product.name;
                 const productPrice = isStaticProduct 
                   ? (product as StaticProduct).price 
                   : `$${(product as Product).price}`;
-                const productImage = isStaticProduct 
-                  ? (product as StaticProduct).image 
-                  : (product as Product).imageUrl || "/placeholder.svg";
                 const productFeatures = product.features;
 
                 return (
@@ -331,11 +363,28 @@ export default function HomePage() {
                   >
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
                       <motion.div 
-                        className="aspect-square relative"
+                        className="aspect-square relative bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center"
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <Image src={productImage} alt={productName} fill className="object-cover" />
+                        {isStaticProduct ? (
+                          <Image
+                            src={(product as StaticProduct).image}
+                            alt={(product as StaticProduct).name}
+                            width={64}
+                            height={64}
+                            className="h-16 w-16 object-contain"
+                            priority
+                          />
+                        ) : mounted ? (
+                          <IconDisplay 
+                            iconName={(product as Product).icon || "package"} 
+                            className="text-primary" 
+                            size={64} 
+                          />
+                        ) : (
+                          <Monitor className="h-16 w-16 text-primary" />
+                        )}
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
@@ -374,7 +423,12 @@ export default function HomePage() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
-                          <Button className="w-full">Solicitar Información</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => openWhatsApp(`Hola, me interesa el producto: ${productName}. ¿Podrían darme más información?`)}
+                          >
+                            Solicitar Información
+                          </Button>
                         </motion.div>
                       </CardContent>
                     </Card>
@@ -383,6 +437,19 @@ export default function HomePage() {
               })
             )}
           </div>
+          
+          {/* Enlace para ver todos los productos */}
+          {((backendProducts && backendProducts.length > 8) || (!backendProducts && products.length > 8)) && (
+            <div className="text-center mt-12">
+              <Link
+                href="/productos"
+                className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Ver todos los productos
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -470,12 +537,11 @@ export default function HomePage() {
                 whileHover={{ scale: 1.02, rotate: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <Image
-                  src="/placeholder.svg?height=500&width=600"
-                  alt="Equipo profesional de técnicos"
-                  width={600}
-                  height={500}
-                  className="rounded-lg shadow-lg"
+                {/* Mostrar GIF servido por el backend */}
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/uploads/images/about.gif`}
+                  alt="Demostración de servicios RESET Multiservicios"
+                  className="rounded-lg shadow-lg w-full h-auto"
                 />
               </motion.div>
             </motion.div>
@@ -483,8 +549,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contacto" className="py-20">
+  {/** Contact Section temporalmente deshabilitada */}
+  {false && (
+  <section id="contacto" className="py-20">
         <div className="container mx-auto px-4">
           <motion.div 
             initial={{ y: 50, opacity: 0 }}
@@ -574,38 +641,11 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          <motion.div 
-            className="text-center mt-12"
-            initial={{ y: 30, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <motion.a
-              href="tel:9932081792"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-block mr-4"
-            >
-              <Button size="lg">
-                <Phone className="h-4 w-4 mr-2" />
-                Llamar Ahora
-              </Button>
-            </motion.a>
-            <motion.a
-              href="mailto:info@resetmultiservicios.com"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-block"
-            >
-              <Button size="lg" variant="outline">
-                <Mail className="h-4 w-4 mr-2" />
-                Enviar Email
-              </Button>
-            </motion.a>
-          </motion.div>
+      {/* Contacto rápido: formulario mínimo */}
+      <ContactMiniForm />
         </div>
       </section>
+    )}
 
       {/* Footer */}
       <motion.footer 
@@ -642,7 +682,7 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Soluciones integrales en seguridad, mantenimiento y tecnología para tu hogar y negocio.
               </p>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1" suppressHydrationWarning>
                 {[...Array(5)].map((_, i) => (
                   <motion.div
                     key={i}
@@ -736,6 +776,76 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.footer>
+
+      {/* WhatsApp Button */}
+      <WhatsAppButton 
+        phoneNumber="+5219932081792" // Número real de RESET Multiservicios
+        position="bottom-right"
+      />
     </div>
+  )
+}
+
+// Temporalmente deshabilitado
+function ContactMiniForm() {
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [message, setMessage] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    if (!name.trim() || !phone.trim()) {
+      setError("Nombre y teléfono son obligatorios")
+      return
+    }
+    try {
+      setSubmitting(true)
+      const res = await apiClient.submitContactMinimal({ name: name.trim(), phone: phone.trim(), message: message.trim() || undefined })
+      setSuccess(res.message || "Enviado. Te contactaremos pronto.")
+      setName("")
+      setPhone("")
+      setMessage("")
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || "No se pudo enviar. Intenta más tarde.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <motion.div 
+      className="max-w-2xl mx-auto mt-12"
+      initial={{ y: 30, opacity: 0 }}
+      whileInView={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      viewport={{ once: true }}
+    >
+      <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2 bg-card p-4 rounded-lg shadow-sm">
+        <div className="md:col-span-1">
+          <label className="block text-sm mb-1">Nombre</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-md border p-2" placeholder="Tu nombre" required />
+        </div>
+        <div className="md:col-span-1">
+          <label className="block text-sm mb-1">Teléfono</label>
+          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-md border p-2" placeholder="Tu teléfono" required />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm mb-1">Comentario (opcional)</label>
+          <textarea value={message} onChange={(e) => setMessage(e.target.value)} className="w-full rounded-md border p-2" placeholder="Cuéntanos brevemente..." rows={3} />
+        </div>
+        <div className="md:col-span-2 flex items-center gap-3">
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Enviando..." : "Enviar"}
+          </Button>
+          {success && <span className="text-green-600 text-sm">{success}</span>}
+          {error && <span className="text-red-600 text-sm">{error}</span>}
+        </div>
+      </form>
+    </motion.div>
   )
 }
