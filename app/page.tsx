@@ -368,7 +368,7 @@ export default function HomePage() {
                   >
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
                       <motion.div 
-                        className="aspect-square relative bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center"
+                        className="aspect-square relative bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center overflow-hidden rounded-lg"
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.3 }}
                       >
@@ -376,18 +376,16 @@ export default function HomePage() {
                           <Image
                             src={(product as StaticProduct).image}
                             alt={(product as StaticProduct).name}
-                            width={64}
-                            height={64}
-                            className="h-16 w-16 object-contain"
+                            fill
+                            className="object-cover"
                             priority
                           />
                         ) : (product as Product).image ? (
                           <Image
                             src={(product as Product).image!}
                             alt={(product as Product).name}
-                            width={64}
-                            height={64}
-                            className="h-16 w-16 object-contain"
+                            fill
+                            className="object-cover"
                             priority
                           />
                         ) : mounted ? (
