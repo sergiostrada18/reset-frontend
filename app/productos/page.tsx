@@ -243,11 +243,28 @@ export default function ProductosPage() {
               >
                 <Card className="h-full hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
+                    {/* Product Image or Icon */}
+                    {product.image ? (
+                      <div className="relative w-full h-48 mb-3 bg-gray-50 rounded-lg overflow-hidden">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-48 mb-3 bg-gradient-to-br from-primary/5 to-primary/20 rounded-lg flex items-center justify-center">
+                        {mounted && (
+                          <IconDisplay iconName={product.icon || "package"} size={48} className="text-primary" />
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
                         {mounted && (
                           <div className="p-2 bg-primary/10 rounded-lg">
-                            <IconDisplay iconName={product.icon || "package"} size={20} />
+                            <IconDisplay iconName={product.icon || "package"} size={16} />
                           </div>
                         )}
                         <div className="flex-1">

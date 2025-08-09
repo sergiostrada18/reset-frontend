@@ -31,7 +31,7 @@ import { Badge } from "@/components/ui/badge"
 import { useServices, useProducts } from "@/hooks/use-data"
 import { Service, Product } from "@/types"
 import CarouselClient from "@/components/carousel-client"
-// import apiClient from "@/lib/api-client" // contacto deshabilitado temporalmente
+import { apiClient } from "@/lib/api-client"
 
 // Interfaces locales para datos estáticos
 interface StaticService {
@@ -275,6 +275,11 @@ export default function HomePage() {
                         </motion.div>
                         <CardTitle className="text-xl">{serviceTitle}</CardTitle>
                         <CardDescription>{serviceDescription}</CardDescription>
+                        {!isStaticService && (service as Service).price !== undefined && (
+                          <div className="mt-2">
+                            <span className="text-2xl font-bold text-primary">${(service as Service).price}</span>
+                          </div>
+                        )}
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2">
@@ -371,6 +376,15 @@ export default function HomePage() {
                           <Image
                             src={(product as StaticProduct).image}
                             alt={(product as StaticProduct).name}
+                            width={64}
+                            height={64}
+                            className="h-16 w-16 object-contain"
+                            priority
+                          />
+                        ) : (product as Product).image ? (
+                          <Image
+                            src={(product as Product).image!}
+                            alt={(product as Product).name}
                             width={64}
                             height={64}
                             className="h-16 w-16 object-contain"
